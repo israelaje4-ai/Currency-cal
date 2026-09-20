@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Global FX & Mini-Importation Calculator</title>
+  
+  <!-- Google Fonts & FontAwesome Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+  <!-- GSAP Animation Engine -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+
+  <style>
+    :root {
+      --bg-primary: #0a0e1a;
+      --bg-card: rgba(18, 26, 47, 0.75);
+      --bg-input: rgba(30, 41, 69, 0.6);
+      --accent-cyan: #00f2fe;
+      --accent-blue: #4facfe;
+      --accent-purple: #7f00ff;
+      --accent-green: #00e676;
+      --text-main: #f1f5f9;
+      --text-muted: #94a3b8;
+      --border-color: rgba(255, 255, 255, 0.08);
+      --glass-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    body {
+      background: var(--bg-primary);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem 1rem;
+      overflow-x: hidden;
+      background-image: 
+        radial-gradient(circle at 10% 20%, rgba(79, 172, 254, 0.15) 0%, transparent 40%),
+        radial-gradient(circle at 90% 80%, rgba(127, 0, 255, 0.15) 0%, transparent 40%);
+    }
+
+    .container {
+      width: 100%;
+      max-width: 1100px;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 2.5rem;
+    }
+
+    header h1 {
+      font-size: 2.5rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--accent-cyan), var(--accent-blue), var(--accent-purple));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 0.5rem;
+    }
+
+    header p {
+      color: var(--text-muted);
+      font-size: 1rem;
+    }
+
+    /* Tab Switcher */
+    .nav-tabs {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .tab-btn {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-color);
+      color: var(--text-muted);
+      padding: 0.75rem 1.5rem;
+      border-radius: 50px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .tab-btn.active, .tab-btn:hover {
+      background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+      color: #fff;
+      border-color: transparent;
+      box-shadow: 0 4px 20px rgba(79, 172, 254, 0.4);
+    }
+
+    /* Main Grid Layout */
+    .grid-layout {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 2rem;
+    }
+
+    @media (min-width: 900px) {
+      .grid-layout {
+        grid-template-columns: 1.2fr 0.8fr;
+      }
+    }
+
+    .glass-card {
+      background: var(--bg-card);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--border-color);
+      border-radius: 24px;
+      padding: 2rem;
+      box-shadow: var(--glass-shadow);
+    }
+
+    .card-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      color: #fff;
+    }
+
+    .card-title i {
+      color: var(--accent-cyan);
+    }
+
+    /* Input Controls */
+    .input-group {
+      margin-bottom: 1.5rem;
+    }
+
+    .input-group label {
+      display: block;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-bottom: 0.5rem;
+      font-weight: 600;
+    }
+
+    .input-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .input-wrapper input, .input-wrapper select {
+      width: 100%;
+      background: var(--bg-input);
+      border: 1px solid var(--border-color);
+      color: #fff;
+      padding: 1rem 1.25rem;
+      border-radius: 14px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      outline: none;
+      transition: all 0.3s ease;
+    }
+
+    .input-wrapper input:focus, .input-wrapper select:focus {
+      border-color: var(--accent-cyan);
+      box-shadow: 0 0 15px rgba(0, 242, 254, 0.2);
+    }
+
+    /* Swap Button */
+    .swap-container {
+      display: flex;
+      justify-content: center;
+      margin: -0.5rem 0 1rem;
+    }
+
+    .swap-btn {
+      background: linear-gradient(135deg, var(--accent-cyan), var(--accent-blue));
+      border: none;
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      color: #000;
+      font-size: 1.2rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 15px rgba(0, 242, 254, 0.3);
+      transition: transform 0.3s ease;
+    }
+
+    .swap-btn:hover {
+      transform: rotate(180deg) scale(1.1);
+    }
+
+    /* Result Display */
+    .result-box {
+      background: rgba(0, 242, 254, 0.05);
+      border: 1px solid rgba(0, 242, 254, 0.2);
+      border-radius: 16px;
+      padding: 1.5rem;
+      text-align: center;
+      margin-top: 1.5rem;
+    }
+
+    .result-box .rate-info {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-bottom: 0.5rem;
+    }
+
+    .result-box .main-value {
+      font-size: 2.2rem;
+      font-weight: 800;
+      color: var(--accent-cyan);
+      letter-spacing: -0.5px;
+    }
+
+    /* Mini Importation Section */
+    .calc-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
+    .summary-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.75rem 0;
+      border-bottom: 1px solid var(--border-color);
+      font-size: 0.95rem;
+    }
+
+    .summary-item span:first-child {
+      color: var(--text-muted);
+    }
+
+    .summary-item.total {
+      border-bottom: none;
+      padding-top: 1rem;
+      font-size: 1.2rem;
+      font-weight: 800;
+      color: var(--accent-green);
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.3rem 0.8rem;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      background: rgba(0, 230, 118, 0.1);
+      color: var(--accent-green);
+      margin-top: 1rem;
+    }
+
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <header>
+      <h1>Global FX & Import Suite</h1>
+      <p>Live World Currency Engine & Mini-Importation Cost Calculator</p>
+    </header>
+
+    <!-- Navigation Tabs -->
+    <div class="nav-tabs">
+      <button class="tab-btn active" onclick="switchTab('fx-tab')">
+        <i class="fa-solid fa-repeat"></i> Live FX Converter
+      </button>
+      <button class="tab-btn" onclick="switchTab('import-tab')">
+        <i class="fa-solid fa-boxes-packing"></i> Mini-Import Calculator
+      </button>
+    </div>
+
+    <div class="grid-layout">
+      
+      <!-- TAB 1: LIVE FX CONVERTER -->
+      <div id="fx-tab" class="glass-card">
+        <div class="card-title">
+          <i class="fa-solid fa-globe"></i> Universal Currency Converter
+        </div>
+
+        <div class="input-group">
+          <label>Amount to Convert</label>
+          <div class="input-wrapper">
+            <input type="number" id="fx-amount" value="1000" min="0" oninput="calculateFX()" />
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label>From Currency</label>
+          <div class="input-wrapper">
+            <select id="fx-from" onchange="calculateFX()"></select>
+          </div>
+        </div>
+
+        <div class="swap-container">
+          <button class="swap-btn" onclick="swapCurrencies()">
+            <i class="fa-solid fa-arrow-up-down"></i>
+          </button>
+        </div>
+
+        <div class="input-group">
+          <label>To Currency</label>
+          <div class="input-wrapper">
+            <select id="fx-to" onchange="calculateFX()"></select>
+          </div>
+        </div>
+
+        <div class="result-box">
+          <div class="rate-info" id="fx-rate-text">1 USD = --- NGN</div>
+          <div class="main-value" id="fx-result-text">0.00</div>
+          <div class="status-badge">
+            <i class="fa-solid fa-bolt"></i> Live API Connected
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 2: MINI-IMPORTATION CALCULATOR -->
+      <div id="import-tab" class="glass-card hidden">
+        <div class="card-title">
+          <i class="fa-solid fa-calculator"></i> Landed Cost Estimator (Taobao ➔ NG)
+        </div>
+
+        <div class="calc-row">
+          <div class="input-group">
+            <label>Item Cost (Yuan - RMB)</label>
+            <div class="input-wrapper">
+              <input type="number" id="item-rmb" value="150" oninput="calculateImportCost()" />
+            </div>
+          </div>
+          <div class="input-group">
+            <label>Agent Rate (NGN / 1 RMB)</label>
+            <div class="input-wrapper">
+              <input type="number" id="agent-rate" value="225" oninput="calculateImportCost()" />
+            </div>
+          </div>
+        </div>
+
+        <div class="calc-row">
+          <div class="input-group">
+            <label>Est. Package Weight (Kg)</label>
+            <div class="input-wrapper">
+              <input type="number" id="weight-kg" value="1.5" step="0.1" oninput="calculateImportCost()" />
+            </div>
+          </div>
+          <div class="input-group">
+            <label>Air Freight Rate ($ / Kg)</label>
+            <div class="input-wrapper">
+              <input type="number" id="freight-rate" value="8.5" step="0.1" oninput="calculateImportCost()" />
+            </div>
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label>Interstate Waybill / Courier Fee (NGN)</label>
+          <div class="input-wrapper">
+            <input type="number" id="waybill-ngn" value="3000" oninput="calculateImportCost()" />
+          </div>
+        </div>
+
+        <div class="result-box" style="text-align: left;">
+          <div class="summary-item">
+            <span>Item Price (Naira):</span>
+            <span id="summary-item-cost">₦0.00</span>
+          </div>
+          <div class="summary-item">
+            <span>Est. Air Freight Cost:</span>
+            <span id="summary-freight-cost">₦0.00</span>
+          </div>
+          <div class="summary-item">
+            <span>Local Waybill Fee:</span>
+            <span id="summary-waybill-cost">₦0.00</span>
+          </div>
+          <div class="summary-item total">
+            <span>Total Landed Cost:</span>
+            <span id="summary-total-cost">₦0.00</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- SIDE PANEL: CURRENCY METRICS & QUICK CONVERSIONS -->
+      <div class="glass-card">
+        <div class="card-title">
+          <i class="fa-solid fa-chart-line"></i> Market Quick Rates (vs NGN)
+        </div>
+
+        <div class="summary-item">
+          <span>🇺🇸 US Dollar (USD)</span>
+          <strong id="rate-usd">Loading...</strong>
+        </div>
+        <div class="summary-item">
+          <span>🇨🇳 Chinese Yuan (CNY)</span>
+          <strong id="rate-cny">Loading...</strong>
+        </div>
+        <div class="summary-item">
+          <span>🇪🇺 Euro (EUR)</span>
+          <strong id="rate-eur">Loading...</strong>
+        </div>
+        <div class="summary-item">
+          <span>🇬🇧 British Pound (GBP)</span>
+          <strong id="rate-gbp">Loading...</strong>
+        </div>
+
+        <div style="margin-top: 2rem; background: rgba(255,255,255,0.03); padding: 1rem; border-radius: 14px;">
+          <h4 style="font-size: 0.9rem; color: var(--accent-cyan); margin-bottom: 0.5rem;">
+            <i class="fa-solid fa-circle-info"></i> Import Tip
+          </h4>
+          <p style="font-size: 0.8rem; color: var(--text-muted); line-height: 1.5;">
+            Freight charges are routinely calculated using the official USD conversion rate, whereas suppliers on Taobao/1688 settle invoices via RMB. Always factor in local waybilling to budget your overall margin correctly.
+          </p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    // Comprehensive Currency List
+    const currencies = ["USD", "NGN", "CNY", "EUR", "GBP", "CAD", "AUD", "JPY", "INR", "AED", "GHS", "ZAR"];
+    
+    // Fallback Exchange Rates relative to 1 USD (Safety net if API limits are reached)
+    let exchangeRates = {
+      USD: 1.0,
+      NGN: 1550.0,
+      CNY: 7.25,
+      EUR: 0.92,
+      GBP: 0.79,
+      CAD: 1.36,
+      AUD: 1.52,
+      JPY: 155.0,
+      INR: 83.5,
+      AED: 3.67,
+      GHS: 14.8,
+      ZAR: 18.2
+    };
+
+    // Initialize Application
+    document.addEventListener("DOMContentLoaded", async () => {
+      populateDropdowns();
+      await fetchLiveRates();
+      calculateFX();
+      calculateImportCost();
+
+      // GSAP Load Animations
+      gsap.from(".glass-card", {
+        duration: 0.8,
+        y: 30,
+        opacity: 0,
+        stagger: 0.2,
+        ease: "power3.out"
+      });
+    });
+
+    // Populate Select Dropdowns
+    function populateDropdowns() {
+      const fromSelect = document.getElementById("fx-from");
+      const toSelect = document.getElementById("fx-to");
+
+      currencies.forEach(currency => {
+        fromSelect.add(new Option(currency, currency));
+        toSelect.add(new Option(currency, currency));
+      });
+
+      fromSelect.value = "USD";
+      toSelect.value = "NGN";
+    }
+
+    // Fetch Live Rates from API
+    async function fetchLiveRates() {
+      try {
+        const res = await fetch("https://open.er-api.com/v6/latest/USD");
+        const data = await res.json();
+        if (data && data.rates) {
+          exchangeRates = data.rates;
+          updateQuickRates();
+        }
+      } catch (err) {
+        console.warn("API fetch failed, falling back to cached baseline rates.", err);
+        updateQuickRates();
+      }
+    }
+
+    // Update Quick Reference Panel
+    function updateQuickRates() {
+      const ngnRate = exchangeRates["NGN"] || 1550;
+      document.getElementById("rate-usd").innerText = `₦${ngnRate.toLocaleString(undefined, {maximumFractionDigits: 2})}`;
+      document.getElementById("rate-cny").innerText = `₦${(ngnRate / (exchangeRates["CNY"] || 7.25)).toFixed(2)}`;
+      document.getElementById("rate-eur").innerText = `₦${(ngnRate / (exchangeRates["EUR"] || 0.92)).toFixed(2)}`;
+      document.getElementById("rate-gbp").innerText = `₦${(ngnRate / (exchangeRates["GBP"] || 0.79)).toFixed(2)}`;
+    }
+
+    // Live FX Conversion Calculation
+    function calculateFX() {
+      const amount = parseFloat(document.getElementById("fx-amount").value) || 0;
+      const from = document.getElementById("fx-from").value;
+      const to = document.getElementById("fx-to").value;
+
+      const rateFromInUSD = exchangeRates[from] || 1;
+      const rateToInUSD = exchangeRates[to] || 1;
+
+      // Cross Rate Calculation
+      const convertedAmount = (amount / rateFromInUSD) * rateToInUSD;
+      const unitRate = (1 / rateFromInUSD) * rateToInUSD;
+
+      document.getElementById("fx-rate-text").innerText = `1 ${from} = ${unitRate.toFixed(4)} ${to}`;
+      document.getElementById("fx-result-text").innerText = `${convertedAmount.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} ${to}`;
+
+      // Pulse animation on result
+      gsap.fromTo("#fx-result-text", { scale: 0.98 }, { scale: 1, duration: 0.2, ease: "power1.out" });
+    }
+
+    // Swap Currencies
+    function swapCurrencies() {
+      const fromSelect = document.getElementById("fx-from");
+      const toSelect = document.getElementById("fx-to");
+      const temp = fromSelect.value;
+      fromSelect.value = toSelect.value;
+      toSelect.value = temp;
+      calculateFX();
+    }
+
+    // Mini Importation Landed Cost Calculation
+    function calculateImportCost() {
+      const itemRmb = parseFloat(document.getElementById("item-rmb").value) || 0;
+      const agentRate = parseFloat(document.getElementById("agent-rate").value) || 0;
+      const weightKg = parseFloat(document.getElementById("weight-kg").value) || 0;
+      const freightRateUsd = parseFloat(document.getElementById("freight-rate").value) || 0;
+      const waybillNgn = parseFloat(document.getElementById("waybill-ngn").value) || 0;
+
+      const usdToNgn = exchangeRates["NGN"] || 1550;
+
+      // Sub-calculations
+      const itemCostNgn = itemRmb * agentRate;
+      const freightCostUsd = weightKg * freightRateUsd;
+      const freightCostNgn = freightCostUsd * usdToNgn;
+      const totalLandedCost = itemCostNgn + freightCostNgn + waybillNgn;
+
+      // UI Updates
+      document.getElementById("summary-item-cost").innerText = `₦${itemCostNgn.toLocaleString(undefined, {maximumFractionDigits: 2})}`;
+      document.getElementById("summary-freight-cost").innerText = `₦${freightCostNgn.toLocaleString(undefined, {maximumFractionDigits: 2})} ($${freightCostUsd.toFixed(2)})`;
+      document.getElementById("summary-waybill-cost").innerText = `₦${waybillNgn.toLocaleString(undefined, {maximumFractionDigits: 2})}`;
+      document.getElementById("summary-total-cost").innerText = `₦${totalLandedCost.toLocaleString(undefined, {maximumFractionDigits: 2})}`;
+    }
+
+    // Navigation Tab Switcher
+    function switchTab(tabId) {
+      document.querySelectorAll(".tab-btn").forEach(btn => btn.classList.remove("active"));
+      event.currentTarget.classList.add("active");
+
+      document.getElementById("fx-tab").classList.add("hidden");
+      document.getElementById("import-tab").classList.add("hidden");
+
+      const activeCard = document.getElementById(tabId);
+      activeCard.classList.remove("hidden");
+
+      gsap.fromTo(activeCard, { opacity: 0, y: 15 }, { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" });
+    }
+  </script>
+</body>
+            </html>
+            
